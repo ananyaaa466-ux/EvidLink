@@ -6,6 +6,9 @@ st.set_page_config(
     layout="wide"
 )
 
+if "reviewed_transactions" not in st.session_state:
+    st.session_state.reviewed_transactions = []
+
 st.title("TRACEGRID")
 st.subheader("EVIDLINK")
 st.write("Explainable Cyber-Fraud Investigation Platform")
@@ -53,8 +56,7 @@ with signal2:
 with signal3:
     st.metric("Risk Level", "High")
 
-
-    st.subheader("Flagged Transactions")
+st.subheader("Flagged Transactions")
 
 transactions = [
     {
@@ -63,6 +65,7 @@ transactions = [
         "To Account": "Unknown UPI ID",
         "Amount (₹)": 25000,
         "Risk Flag": "High",
+         "Risk Reason": "₹25,000 was sent to an unknown UPI ID linked to repeated transfers.",
     },
     {
         "Transaction ID": "TXN-1002",
@@ -70,6 +73,7 @@ transactions = [
         "To Account": "Unknown UPI ID",
         "Amount (₹)": 18000,
         "Risk Flag": "High",
+           "Risk Reason": "₹18,000 was sent to the same unknown UPI ID from another linked account.",
     },
     {
         "Transaction ID": "TXN-1003",
@@ -77,6 +81,7 @@ transactions = [
         "To Account": "Merchant Account",
         "Amount (₹)": 9500,
         "Risk Flag": "Medium",
+          "Risk Reason": "This merchant transfer is connected to an account already involved in the suspicious network.",
     },
 ]
 
@@ -111,15 +116,57 @@ st.write(f"**From:** {selected_transaction['From Account']}")
 st.write(f"**To:** {selected_transaction['To Account']}")
 st.write(f"**Amount:** ₹{selected_transaction['Amount (₹)']}")
 st.write(f"**Risk Flag:** {selected_transaction['Risk Flag']}")
+
 if selected_transaction["Risk Flag"] == "High":
-    st.error(
-        "Why flagged: This transfer is linked to an unknown UPI ID and is part of a repeated suspicious transaction pattern."
-    )
+    st.error(f"Why flagged: {selected_transaction['Risk Reason']}")
 else:
-    st.warning(
-        "Why flagged: This transaction needs review because it is connected to an account involved in the case."
-    )
+    st.warning(f"Why flagged: {selected_transaction['Risk Reason']}")
+
 if st.button("Mark selected transaction as reviewed"):
+    if selected_transaction_id not in st.session_state.reviewed_transactions:
+        st.session_state.reviewed_transactions.append(selected_transaction_id)
+
     st.success(
         f"{selected_transaction_id} has been marked as reviewed for this investigation session."
     )
+
+if selected_transaction_id in st.session_state.reviewed_transactions:
+    st.write("**Review Status:** Reviewed")
+else:
+    st.write("**Review Status:** Pending Review")
+
+st.subheader("Evidence Timeline")   
+
+case_timeline = [
+    {
+        "Time": "09:10 AM",
+        "Event": "Suspicious UPI transfer detected",
+        "Details": "TXN-1001 sent ₹25,000 to an unknown UPI ID.",
+    },
+    {
+        "Time": "09:18 AM",
+        "Event": "Second linked transfer detected",
+        "Details": "TXN-1002 sent ₹18,000 to the same unknown UPI ID.",
+    },
+    {
+        "Time": "09:25 AM",
+        "Event": "Risk alert generated",
+        "Details": "Repeated transfer pattern raised the case risk level to High.",
+    },
+]
+
+st.dataframe(case_timeline, use_container_width=True, hide_index=True)
+
+
+st.subheader("Investigator Notes")
+
+investigator_note = st.text_area(
+    "Add an observation for the selected transaction",
+    placeholder="Example: TXN-1001 should be verified with the bank before further action."
+)
+
+if st.button("Save investigation note"):
+    if investigator_note.strip():
+        st.success("Investigation note saved for this session.")
+    else:
+        st.warning("Please write a note before saving.")
