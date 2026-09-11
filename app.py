@@ -1,20 +1,27 @@
 import streamlit as st
+from ui_styles import get_ui_styles
 
 st.set_page_config(
     page_title="EVIDLINK",
     page_icon="🔎",
     layout="wide"
 )
+st.markdown(get_ui_styles(), unsafe_allow_html=True)
 
 if "reviewed_transactions" not in st.session_state:
     st.session_state.reviewed_transactions = []
 
-st.title("EVIDLINK")
-st.write("Explainable Cyber-Fraud Investigation Platform")
+header_main, header_status = st.columns([4, 1])
+
+with header_main:
+    st.title("EVIDLINK")
+    st.caption("Cyber-Fraud Investigation Workspace")
+
+with header_status:
+    st.markdown("#### CASE-001")
+    st.caption("HIGH PRIORITY")
 
 st.divider()
-
-st.write("Case #001")
 
 
 st.subheader("Case Overview")
