@@ -9,8 +9,7 @@ st.set_page_config(
 if "reviewed_transactions" not in st.session_state:
     st.session_state.reviewed_transactions = []
 
-st.title("TRACEGRID")
-st.subheader("EVIDLINK")
+st.title("EVIDLINK")
 st.write("Explainable Cyber-Fraud Investigation Platform")
 
 st.divider()
@@ -65,7 +64,11 @@ transactions = [
         "To Account": "Unknown UPI ID",
         "Amount (₹)": 25000,
         "Risk Flag": "High",
-         "Risk Reason": "₹25,000 was sent to an unknown UPI ID linked to repeated transfers.",
+        "Risk Reason": "₹25,000 was sent to an unknownUPI ID linked to repeated transfers.",
+        "Evidence Source": "upi_transaction_log.csv",
+"Record ID": "REC-183",
+"Timestamp": "09:10 AM",
+"Confidence": "96%",
     },
     {
         "Transaction ID": "TXN-1002",
@@ -74,6 +77,10 @@ transactions = [
         "Amount (₹)": 18000,
         "Risk Flag": "High",
            "Risk Reason": "₹18,000 was sent to the same unknown UPI ID from another linked account.",
+           "Evidence Source": "upi_transaction_log.csv",
+"Record ID": "REC-184",
+"Timestamp": "09:18 AM",
+"Confidence": "93%",
     },
     {
         "Transaction ID": "TXN-1003",
@@ -82,6 +89,10 @@ transactions = [
         "Amount (₹)": 9500,
         "Risk Flag": "Medium",
           "Risk Reason": "This merchant transfer is connected to an account already involved in the suspicious network.",
+          "Evidence Source": "merchant_transfer_log.csv",
+"Record ID": "REC-185",
+"Timestamp": "09:25 AM",
+"Confidence": "78%",
     },
 ]
 
@@ -121,6 +132,12 @@ if selected_transaction["Risk Flag"] == "High":
     st.error(f"Why flagged: {selected_transaction['Risk Reason']}")
 else:
     st.warning(f"Why flagged: {selected_transaction['Risk Reason']}")
+st.subheader("Supporting Evidence")
+
+st.write(f"**Evidence Source:** {selected_transaction['Evidence Source']}")
+st.write(f"**Record ID:** {selected_transaction['Record ID']}")
+st.write(f"**Timestamp:** {selected_transaction['Timestamp']}")
+st.write(f"**Confidence:** {selected_transaction['Confidence']}")
 
 if st.button("Mark selected transaction as reviewed"):
     if selected_transaction_id not in st.session_state.reviewed_transactions:
@@ -170,3 +187,36 @@ if st.button("Save investigation note"):
         st.success("Investigation note saved for this session.")
     else:
         st.warning("Please write a note before saving.")
+
+st.divider()
+
+st.subheader("Investigation Brief")
+
+if st.button("Generate investigation brief"):
+    note_for_brief = (
+        investigator_note
+        if investigator_note.strip()
+        else "No investigator note has been added."
+    )
+
+    st.markdown(
+        f"""
+### Case Investigation Brief
+
+**Case ID:** CASE-001  
+**Overall Risk:** High  
+**Selected Transaction:** {selected_transaction_id}  
+**From Account:** {selected_transaction['From Account']}  
+**To Account:** {selected_transaction['To Account']}  
+**Amount:** ₹{selected_transaction['Amount (₹)']}  
+**Risk Flag:** {selected_transaction['Risk Flag']}  
+
+**Evidence-Based Observation:**  
+{selected_transaction['Risk Reason']}
+
+**Investigator Note:**  
+{note_for_brief}
+
+**Status:** This information is provided for investigator review and does not establish guilt.
+"""
+    )        
